@@ -13,7 +13,7 @@ auth_provider = PlainTextAuthProvider(username='cassandra', password='cassandra'
 
 # '127.0.0.1' fonctionne si le port 9042 de ton Docker est mappé sur ta machine
 cluster = Cluster(['cassandra-europe'], port=9042)
-session = cluster.connect()
+session = cluster.connect('logitrack')
 
 print("🔌 Connecté avec succès à Cassandra !")
 
