@@ -1,0 +1,59 @@
+services:
+  # Nœud 1 : Europe (Le nœud principal / Seed)
+  cassandra-europe:
+    image: cassandra:latest
+    container_name: cassandra-europe
+    ports:
+      - "9042:9042" # Port exposé pour ton script Python
+    environment:
+      - CASSANDRA_CLUSTER_NAME=LogiTrackCluster
+      - CASSANDRA_DC=dc-europe
+      - CASSANDRA_RACK=rack-europe-1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_SEEDS=cassandra-europe # ⬅️ AJOUT CRUCIAL ICI pour stabiliser le nœud principal
+      - MAX_HEAP_SIZE=512M               # ⬅️ LIMITE LA RAM pour éviter que Windows ne tue le processus
+      - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra_data_europe:/var/lib/cassandra
+    networks:
+      - cassandra-net
+
+  # Nœud 2 : USA (Il rejoint le nœud Europe)
+  cassandra-us:
+    image: cassandra:latest
+    container_name: cassandra-us
+    environment:
+      - CASSANDRA_CLUSTER_NAME=LogiTrackCluster
+      - CASSANDRA_DC=dc-us
+      - CASSANDRA_RACK=rack-us-1
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_SEEDS=cassandra-europe
+      - MAX_HEAP_SIZE=512M               # ⬅️ LIMITE LA RAM aussi ici
+      - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra_data_us:/var/lib/cassandra
+    depends_on:
+      - cassandra-europe
+    networks:
+      - cassandra-net
+
+  # Conteneur Python pour exécuter le script
+  python-app:
+    image: python:3.11-slim
+    container_name: python-cours
+    volumes:
+      - ./PythonProject:/opt/Python/work-dir
+    working_dir: /opt/Python/work-dir
+    networks:
+      - cassandra-net
+    command: tail -f /dev/null
+    depends_on:
+      - cassandra-europe
+
+volumes:
+  cassandra_data_europe:
+  cassandra_data_us:
+
+networks:
+  cassandra-net:
+    driver: bridge

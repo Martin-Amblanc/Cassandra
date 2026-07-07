@@ -1,0 +1,34 @@
+# Guide d'installation. #
+
+# 1 - Install le second docker-compose.yml avec cassandra-europe et cassandra-us sur ton PC dans le dossier ./ApacheCassandra
+# 2 - Copie le fichier Load_logitrack.telemetry_by_truck.py sur ton PC dans le dossier ./ApacheCassandra/PythonProject
+
+docker-compose up -d
+
+# 3 - WAIT 30 seconds. #
+
+docker-compose ps 
+
+# Vérifiez :  
+# NAME               IMAGE              COMMAND                  SERVICE            CREATED          STATUS          PORTS
+#cassandra-europe   cassandra:latest   "docker-entrypoint.s…"   cassandra-europe   37 seconds ago   Up 36 seconds   0.0.0.0:9042->9042/tcp, [::]:9042->9042/tcp
+#cassandra-us       cassandra:latest   "docker-entrypoint.s…"   cassandra-us       37 seconds ago   Up 35 seconds   7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp
+#python-cours       python:3.11-slim   "tail -f /dev/null"      python-app         37 seconds ago   Up 35 seconds
+
+# 4 - Lance un instance CSQL dans une [seconde] fenetre de shell. #
+
+docker exec -it cassandra-europe cqlsh -u cassandra -p cassandra
+
+###########################################################################################
+# 5 - Execute tes scripts SQL (voir sujet 20260706-EPSI_WIS-M1 - CM-Apache Cassandra.docx #
+###########################################################################################
+
+#...
+
+
+# 6 - Ce programme en Python permet de charger la table telemetry_by_truck en information afin de continuer le TP. #
+#     Ce programme en Python est adaptable à votre conception.                                                     #
+
+       # cette 1ere ligne doit etre exécuté lors de chaque arret/relance du python-cours # 
+docker exec -it python-cours pip install cassandra-driver
+docker exec -it python-cours python /opt/Python/work-dir/Load_logitrack.telemetry_by_truck.py
